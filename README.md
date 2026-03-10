@@ -4,6 +4,10 @@ An AI-powered mock interview application built with **React**, **Node.js**, and 
 
 ---
 
+🌐 **Live Demo:** [prep-ai-roan.vercel.app](https://prep-ai-roan.vercel.app)
+
+---
+
 ## 🚀 Features
 
 - 🤖 AI-generated questions based on your role and difficulty
