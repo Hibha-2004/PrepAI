@@ -34,7 +34,10 @@ async function callGemini(systemPrompt, userPrompt) {
     throw new Error(err.error?.message || 'Gemini API error');
   }
   const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
+  let text = data.candidates[0].content.parts[0].text;
+  // Remove any control characters that break JSON parsing
+  text = text.replace(/[\x00-\x1F\x7F]/g, ' ').trim();
+  return text;
 }
 
 // ── Health Check ──
