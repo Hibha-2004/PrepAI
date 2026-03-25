@@ -1,19 +1,29 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-
-dotenv.config();
+const connectDB = require('./db');
+const authRoutes = require('./routes/auth');
+const sessionRoutes = require('./routes/sessions');
+const authMiddleware = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(cors());
 app.use(express.json());
 
+// Auth & Session Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/sessions', sessionRoutes);
+
+// Gemini Setup
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-// Helper to call Gemini
 async function callGemini(systemPrompt, userPrompt) {
   const response = await fetch(GEMINI_URL, {
     method: 'POST',
@@ -22,8 +32,8 @@ async function callGemini(systemPrompt, userPrompt) {
       contents: [
         { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
       ],
-      generationConfig: { 
-        temperature: 0.7, 
+      generationConfig: {
+        temperature: 0.7,
         maxOutputTokens: 2000,
         responseMimeType: "application/json"
       }
@@ -34,19 +44,16 @@ async function callGemini(systemPrompt, userPrompt) {
     throw new Error(err.error?.message || 'Gemini API error');
   }
   const data = await response.json();
-  let text = data.candidates[0].content.parts[0].text;
-  // Remove any control characters that break JSON parsing
-  text = text.replace(/[\x00-\x1F\x7F]/g, ' ').trim();
-  return text;
+  return data.candidates[0].content.parts[0].text;
 }
 
-// ── Health Check ──
+// Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'PrepAI backend is running with Gemini' });
+  res.json({ status: 'OK', message: 'PrepAI backend is running' });
 });
 
-// ── Generate Questions ──
-app.post('/api/generate-questions', async (req, res) => {
+// Generate Questions (protected)
+app.post('/api/generate-questions', authMiddleware, async (req, res) => {
   const { role, type, count, experience, difficulty } = req.body;
   try {
     const systemPrompt = `You are an expert interviewer. Return ONLY a valid JSON array of ${count} interview question objects. Each object must have: "question" (string) and "type" (string: one of Technical, Behavioral, "System Design", HR). No markdown, no explanation, just the raw JSON array.`;
@@ -63,8 +70,8 @@ app.post('/api/generate-questions', async (req, res) => {
   }
 });
 
-// ── Evaluate Answer ──
-app.post('/api/evaluate-answer', async (req, res) => {
+// Evaluate Answer (protected)
+app.post('/api/evaluate-answer', authMiddleware, async (req, res) => {
   const { question, answer, difficulty, questionType } = req.body;
   if (!answer || answer.trim().length < 5) {
     return res.status(400).json({ error: 'Answer too short to evaluate' });
@@ -92,8 +99,8 @@ No markdown, no backticks, just raw JSON.`;
   }
 });
 
-// ── Generate Final Report ──
-app.post('/api/final-report', async (req, res) => {
+// Final Report (protected)
+app.post('/api/final-report', authMiddleware, async (req, res) => {
   const { role, feedbacks, overallScore } = req.body;
   try {
     const summary = feedbacks.map((f, i) =>
@@ -115,7 +122,6 @@ app.post('/api/final-report', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 PrepAI Backend running at http://localhost:${PORT}`);
-  console.log(`🤖 Using: Google Gemini 2.0 Flash`);
-  console.log(`📡 Health check: http://localhost:${PORT}/api/health\n`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`MongoDB connected successfully`);
 });

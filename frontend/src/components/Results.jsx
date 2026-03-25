@@ -16,16 +16,30 @@ export default function Results({ data, onRestart }) {
   const chipClass = v => v === 'Good' ? s.good : v === 'Fair' ? s.mid : s.low;
 
   useEffect(() => {
-    async function fetchReport() {
-      try {
-        const feedbacks = results.map(r => ({ question: r.question, score: r.score, skipped: r.skipped }));
-        const res = await api.finalReport({ role, feedbacks, overallScore: avgScore });
-        setReport(res);
-      } catch { setReport(null); }
-      finally { setLoadingReport(false); }
-    }
-    fetchReport();
-  }, []);
+  async function fetchReport() {
+    try {
+      const feedbacks = results.map(r => ({ question: r.question, score: r.score, skipped: r.skipped }));
+      const res = await api.finalReport({ role, feedbacks, overallScore: avgScore });
+      setReport(res);
+
+      await api.saveSession({
+        topic: role,
+        difficulty,
+        totalScore,
+        questions: results.map(r => ({
+          question: r.question,
+          type: r.type,
+          score: r.score,
+          skipped: r.skipped,
+          feedback: r.feedback || null,
+        })),
+      });
+
+    } catch { setReport(null); }
+    finally { setLoadingReport(false); }
+  }
+  fetchReport();
+ }, []);
 
   const verdictColor = v => {
     if (!v) return 'var(--muted)';
