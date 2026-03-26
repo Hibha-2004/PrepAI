@@ -1,6 +1,6 @@
-const BASE = process.env.REACT_APP_BACKEND_URL
+const BASE = process.env.REACT_APP_BACKEND_URL 
   ? `${process.env.REACT_APP_BACKEND_URL}/api`
-  : 'http://localhost:5000/api';
+  : '/api';
 
 const getToken = () => localStorage.getItem('token');
 
