@@ -61,3 +61,21 @@
 .submitBtn:hover { background: #9580ff; }
 .nextBtn { flex: 1; padding: 13px; background: var(--accent); border: none; color: #fff; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
 .nextBtn:hover { background: #9580ff; }
+/* Discard Button */
+.discardBtn { 
+  padding: 13px 24px; 
+  background: transparent; 
+  border: 1px solid rgba(255, 80, 80, 0.45); 
+  color: #ff5555; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  font-size: 0.82rem; 
+  letter-spacing: 0.04em; 
+  transition: all 0.2s ease; 
+  margin-right: auto; 
+}
+.discardBtn:hover { 
+  background: rgba(255, 80, 80, 0.12); 
+  border-color: #ff5555; 
+  box-shadow: 0 0 10px rgba(255, 80, 80, 0.25); 
+}

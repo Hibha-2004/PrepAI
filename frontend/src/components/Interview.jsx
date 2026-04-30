@@ -73,6 +73,15 @@ export default function Interview({ session, onFinish }) {
       setError('');
     }
   }
+  
+  function handleDiscard() {
+    const confirmed = window.confirm(
+      "Discard this interview? All progress will be lost."
+    );
+    if (confirmed) {
+      onFinish(null);
+    }
+  }
 
   const chipClass = v => v === 'Good' ? s.good : v === 'Fair' ? s.mid : s.low;
   const scoreColor = n => n >= 7 ? 'var(--accent3)' : n >= 4 ? '#ffc850' : 'var(--accent2)';
@@ -159,6 +168,9 @@ export default function Interview({ session, onFinish }) {
 
       {/* Buttons */}
       <div className={s.btnRow}>
+        <button className={s.discardBtn} onClick={handleDiscard}>
+          Discard
+        </button>
         {!feedback && !evaluating && (
           <button className={s.skipBtn} onClick={handleSkip}>Skip</button>
         )}

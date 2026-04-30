@@ -21,6 +21,11 @@ function MainApp() {
   }
 
   function handleFinish(results) {
+    if (results === null) {
+      setSession(null);
+      setScreen('setup');
+      return;
+    }
     setResultData(results);
     setScreen('results');
   }
